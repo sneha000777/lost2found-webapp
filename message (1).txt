@@ -1,0 +1,98 @@
+import React, { useState } from 'react';
+import './App.css';
+import data from './items.json';
+import { Button, Modal, Form } from 'react-bootstrap';
+
+function App() {
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [contact, setContact] = useState('');
+
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+  const handleNameChange = (e) => setName(e.target.value);
+  const handleDescriptionChange = (e) => setDescription(e.target.value);
+  const handleContactChange = (e) => setContact(e.target.value);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newItem = {
+      id: data.length + 1,
+      name: name,
+      description: description,
+      contact: contact
+    };
+    const newData = [...data, newItem];
+    console.log(newData); // Update the JSON file or save the data to your backend
+    setName('');
+    setDescription('');
+    setContact('');
+    setShowModal(false);
+  };
+
+  return (
+    <div className="App">
+      <header>
+        <h1>Lost and Found</h1>
+      </header>
+      <div className="container">
+        <div className="row">
+          <div className="col-md-12">
+            <Button variant="primary" className="float-right" onClick={handleShowModal}>
+              Lost item?
+            </Button>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col-md-12">
+            <div className="list-group">
+              {data.map(item => (
+                <div key={item.id} className="list-group-item">
+                  <h2 className="list-group-item-heading">{item.name}</h2>
+                  <p className="list-group-item-text">Description: {item.description}</p>
+                  <p className="list-group-item-text">Contact: {item.contact}</p>
+                  <Button variant="primary" onClick={handleShowModal}>Edit</Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>{'Add Lost Item'}</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Body>
+            <Form.Group controlId="name">
+              <Form.Label>Name</Form.Label>
+              <Form.Control type="text" value={name} onChange={handleNameChange} required />
+            </Form.Group>
+            <Form.Group controlId="description">
+              <Form.Label>Description</Form.Label>
+              <Form.Control as="textarea" rows={3} value={description} onChange={handleDescriptionChange} required />
+            </Form.Group>
+            <Form.Group controlId="contact">
+              <Form.Label>Contact</Form.Label>
+              <Form.Control type="text" value={contact} onChange={handleContactChange} required />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+            <Button variant="primary" type="submit">
+              Save changes
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,189 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import axios from 'axios'; // Move import statement here
+import data from './items.json'; // Import data from data.js
+import { Card ,Badge, Button, Modal, Form } from 'react-bootstrap';
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
+function App() {
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [contact, setContact] = useState('');
+  const [editItemId, setEditItemId] = useState(null);
+  const [data, setData] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = () => {
+    axios.get('http://localhost:5000/api/items')
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  };
+
+  const handleShowModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+  const handleEditItem = (itemId) => {
+    const selectedItem = data.find(item => item.id === itemId);
+    if (selectedItem) {
+      setName(selectedItem.name);
+      setDescription(selectedItem.description);
+      setContact(selectedItem.contact);
+      setEditItemId(itemId);
+      setShowModal(true);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const updatedItem = {
+      name: name,
+      description: description,
+      contact: contact
+    };
+
+    axios.put(`http://localhost:5000/api/items/${editItemId}`, updatedItem)
+      .then(response => {
+        console.log('Item updated successfully:', response.data);
+        fetchData(); // Refresh item list
+        setName('');
+        setDescription('');
+        setContact('');
+        setEditItemId(null);
+        setShowModal(false);
+      })
+      .catch(error => {
+        console.error('Error updating item:', error);
+    });
+  };
+
+  const handleShowAddModal = () => setShowAddModal(true);
+  const handleCloseAddModal = () => setShowAddModal(false);
+
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    const newItem = {
+      name: name,
+      description: description,
+      contact: contact
+    };
+
+    // Send a POST request to the backend to add the new item
+    axios.post('http://localhost:5000/api/add-item-endpoint', newItem) // Change the endpoint to the appropriate one
+      .then(response => {
+        console.log('Item added successfully:', response.data);
+        // Optionally, you can refresh the item list or take any other action here
+        setName('');
+        setDescription('');
+        setContact('');
+        setShowAddModal(false);
+      })
+      .catch(error => {
+        console.error('Error adding item:', error);
+      });
+  };
+  
+
+  return (
+    <div className="App">
+      <header>
+        <h1>Lost and Found</h1>
+      </header>
+      <div className="container">
+        <div className="row">
+        {data.map(item => (
+  <div key={item.id} className="col-md-4 mb-3">
+    <Card>
+      <Card.Body>
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h2>{item.name}</h2>
+          <div className="d-flex align-items-center">
+            <Badge style={{ fontSize: 14, alignSelf: 'center' }} bg={item.status === 'Found' ? 'success' : 'danger'} variant={item.status === 'Found' ? 'success' : 'danger'}>
+              {item.status}
+            </Badge>
+          </div>
+        </div>
+        <p><b>Description</b>: {item.description}</p>
+        <p><b>Contact</b>: {item.contact}</p>
+        <Button variant="primary" onClick={() => handleEditItem(item.id)}>
+            <FontAwesomeIcon icon={faPencilAlt} />
+        </Button>
+      </Card.Body>
+    </Card>
+  </div>
+))}
+        </div>
+      </div>
+
+      {/* Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Lost Item</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleSubmit}>
+          <Modal.Body>
+            <Form.Group controlId="name">
+              <Form.Label>Name</Form.Label>
+              <Form.Control type="text" value={name} onChange={e => setName(e.target.value)} required />
+            </Form.Group>
+            <Form.Group controlId="description">
+              <Form.Label>Description</Form.Label>
+              <Form.Control as="textarea" rows={3} value={description} onChange={e => setDescription(e.target.value)} required />
+            </Form.Group>
+            <Form.Group controlId="contact">
+              <Form.Label>Contact</Form.Label>
+              <Form.Control type="text" value={contact} onChange={e => setContact(e.target.value)} required />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+            <Button variant="primary" type="submit">Save changes</Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+      <Modal show={showAddModal} onHide={handleCloseAddModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add New Item</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handleAddItem}>
+          <Modal.Body>
+            <Form.Group controlId="name">
+              <Form.Label>Name</Form.Label>
+              <Form.Control type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+            </Form.Group>
+            <Form.Group controlId="description">
+              <Form.Label>Description</Form.Label>
+              <Form.Control as="textarea" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} required />
+            </Form.Group>
+            <Form.Group controlId="contact">
+              <Form.Label>Contact</Form.Label>
+              <Form.Control type="text" value={contact} onChange={(e) => setContact(e.target.value)} required />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseAddModal}>
+              Close
+            </Button>
+            <Button variant="primary" type="submit">Save</Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
+
+
+export default App;
