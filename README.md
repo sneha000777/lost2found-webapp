@@ -1,2 +1,3 @@
 # lost-and-found
-hackathon
+neophyte hackathon
+Lost2Found is a web application developed during the Neophyte Hackathon to streamline the process of reporting and recovering lost and found items. The app allows users to securely register, log in, and report lost or found items with detailed descriptions and images. It features a robust search functionality to match lost and found reports, automated notifications for potential matches, and a personalized user dashboard for managing reports. Built with React.js, Node.js, Express.js,HTML,CSS and firebase. Lost2Found aims to enhance community assistance in reuniting people with their belongings.
